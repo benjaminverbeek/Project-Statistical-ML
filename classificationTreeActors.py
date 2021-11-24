@@ -1,4 +1,9 @@
 # Decision tree for movie leads
+# Project in Statistical Machine Learning, 5 c
+# Written by Benjamin Verbeek, Uppsala 2021-11-24
+
+# NOTES: Initial, naive implementation of calssification tree
+# yields accuracy of around 75-80 % (depth=3). 
 
 import pandas as pd
 import numpy as np

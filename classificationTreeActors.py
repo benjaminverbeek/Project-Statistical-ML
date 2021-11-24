@@ -34,12 +34,12 @@ X_finalTest = finalTest.copy()
 
 X_test = test.copy().drop(columns=["Lead"])
 y_test = test["Lead"]
+allMale = test["Lead"].copy().replace(["Female"],"Male") # make a copy with all Male.
 
 y_predict = model.predict(X_test)
-print(f'Accuracy: {np.mean(y_predict == y_test):.2f}')
-pd.crosstab(y_predict, y_test)
-
-
+print(f'Accuracy tree: \t\t {np.mean(y_predict == y_test):.2f}')
+print(f'Accuracy all-male: \t {np.mean(allMale == y_test):.2f}')
+print(pd.crosstab(y_predict, y_test))
 
 
 

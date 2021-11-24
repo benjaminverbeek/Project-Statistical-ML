@@ -1,9 +1,11 @@
-# Decision tree for movie leads
+# Tree method for movie leads
 # Project in Statistical Machine Learning, 5 c
 # Written by Benjamin Verbeek, Uppsala 2021-11-24
 
-# NOTES: Initial, naive implementation of calssification tree
-# yields accuracy of around 75-80 % (depth=3). 
+# NOTES: Just a decision tree performs no better than guessing "Male" on all.
+# Using randomForest, accuracy is roughly 85% on data with 78% male (so 
+# slighyly better only). Try with bagging? Some other methods? Tuning tree?
+# Data is very unbalanced; much more male data.
 
 import pandas as pd
 import numpy as np
@@ -15,8 +17,8 @@ from sklearn.ensemble import BaggingClassifier, RandomForestClassifier
 
 import graphviz
 
-def treeDropCols(model, X_train, y_train, X_test, y_test, dropCols=[]):
-    """Function dropping some X-data."""
+def modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=[]):
+    """Function running model dropping some X-params."""
     
     print(f"\nResults without {dropCols}")
     X_train = X_train.copy().drop(columns=dropCols)
@@ -26,14 +28,27 @@ def treeDropCols(model, X_train, y_train, X_test, y_test, dropCols=[]):
     y_predict = model.predict(X_test)
 
     print(f'Accuracy tree: \t\t {np.mean(y_predict == y_test):.2f}')
+    allMale = y_test.copy().replace(["Female"],"Male") # make a copy with all Male.
     print(f'Accuracy all-male: \t {np.mean(allMale == y_test):.2f}')
     print(pd.crosstab(y_predict, y_test))
     print("-----------------")
 
+
+def allCombos(lst):
+    """Takes in a list of lists and returns a list of all combinations of list elements."""
+    combos = []
+    for i in range(2**len(lst)):
+        a=i
+        params = []
+        for j in range(len(lst)):
+            if a%2 == 1:
+                params += lst[j]
+            a = a//2
+        combos.append(params)
+    return combos
 ######
 
 practiseTrain = pd.read_csv("train.csv")
-finalTest = pd.read_csv("test.csv")
 
 # split practiseTrain into train & test
 trainTestRatio = 0.6
@@ -41,31 +56,26 @@ trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain
 train = practiseTrain.iloc[trainIndex]
 test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
 
+# split into X and y
 X_train = train.copy().drop(columns=["Lead"])      # target
 y_train = train["Lead"]
-
-#model = tree.DecisionTreeClassifier(max_depth=3, min_samples_leaf=1)
-#model.fit(X=X_train, y=y_train)
-
-X_finalTest = finalTest.copy()
-
 X_test = test.copy().drop(columns=["Lead"])
 y_test = test["Lead"]
-allMale = test["Lead"].copy().replace(["Female"],"Male") # make a copy with all Male.
 
-#y_predict = model.predict(X_test)
-#print(f'Accuracy tree: \t\t {np.mean(y_predict == y_test):.2f}')
-#print(f'Accuracy all-male: \t {np.mean(allMale == y_test):.2f}')
-#print(pd.crosstab(y_predict, y_test))
+# for final output predicition (has no y)
+finalTest = pd.read_csv("test.csv")
+X_finalTest = finalTest.copy()
 
-model = tree.DecisionTreeClassifier(max_depth=3, min_samples_leaf=1)
-treeDropCols(model, X_train, y_train, X_test, y_test, dropCols=['Year'])
-treeDropCols(model, X_train, y_train, X_test, y_test, dropCols=['Year'])
-
-# TODO: Write for-loop to try all permutations of 3 variables to study.
-#       Improve performance to be better than "all male"-guess.
-#       e.g. by tuning tree params. Ideas?
-
+#model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
+model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)           # Random forest: naive gives 80-85%
+# TODO: How to improve?
+testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
+combos = allCombos(testParams)
+print(f"Generated {len(combos)} combinations.")
+print("Running ML-algo. for all combos.")
+model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)
+for c in combos:
+    modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=c)
 
 #while True:
 #    exec(input("> "))

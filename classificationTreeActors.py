@@ -62,5 +62,10 @@ model = tree.DecisionTreeClassifier(max_depth=3, min_samples_leaf=1)
 treeDropCols(model, X_train, y_train, X_test, y_test, dropCols=['Year'])
 treeDropCols(model, X_train, y_train, X_test, y_test, dropCols=['Year'])
 
+# TODO: Write for-loop to try all permutations of 3 variables to study.
+#       Improve performance to be better than "all male"-guess.
+#       e.g. by tuning tree params. Ideas?
+
+
 #while True:
 #    exec(input("> "))

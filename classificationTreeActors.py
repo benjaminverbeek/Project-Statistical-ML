@@ -48,34 +48,35 @@ def allCombos(lst):
     return combos
 ######
 
-practiseTrain = pd.read_csv("train.csv")
+if __name__=="__main__":
+    practiseTrain = pd.read_csv("train.csv")
 
-# split practiseTrain into train & test
-trainTestRatio = 0.6
-trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
-train = practiseTrain.iloc[trainIndex]
-test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
+    # split practiseTrain into train & test
+    trainTestRatio = 0.6
+    trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
+    train = practiseTrain.iloc[trainIndex]
+    test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
 
-# split into X and y
-X_train = train.copy().drop(columns=["Lead"])      # target
-y_train = train["Lead"]
-X_test = test.copy().drop(columns=["Lead"])
-y_test = test["Lead"]
+    # split into X and y
+    X_train = train.copy().drop(columns=["Lead"])      # target
+    y_train = train["Lead"]
+    X_test = test.copy().drop(columns=["Lead"])
+    y_test = test["Lead"]
 
-# for final output predicition (has no y)
-finalTest = pd.read_csv("test.csv")
-X_finalTest = finalTest.copy()
+    # for final output predicition (has no y)
+    finalTest = pd.read_csv("test.csv")
+    X_finalTest = finalTest.copy()
 
-#model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
-model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)           # Random forest: naive gives 80-85%
-# TODO: How to improve?
-testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
-combos = allCombos(testParams)
-print(f"Generated {len(combos)} combinations.")
-print("Running ML-algo. for all combos.")
-model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)
-for c in combos:
-    modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=c)
+    #model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
+    model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)           # Random forest: naive gives 80-85%
+    # TODO: How to improve?
+    testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
+    combos = allCombos(testParams)
+    print(f"Generated {len(combos)} combinations.")
+    print("Running ML-algo. for all combos.")
+    model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)
+    for c in combos:
+        modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=c)
 
-#while True:
-#    exec(input("> "))
+    #while True:
+    #    exec(input("> "))

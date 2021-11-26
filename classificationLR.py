@@ -37,6 +37,12 @@ def allCombos(lst):
             a = a//2
         combos.append(params)
     return combos
+
+def rescaleDataFrame(df):
+    scaler = StandardScaler()
+    scaled_input = scaler.fit_transform(df.values)
+    scaled_df = pd.DataFrame(scaled_input, index=df.index, columns=df.columns)
+    return scaled_df
 ######
 
 practiseTrain = pd.read_csv("~/SML/Project-Statistical-ML/train.csv")
@@ -48,14 +54,11 @@ train = practiseTrain.iloc[trainIndex]
 test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
 
 # split into X and y and apply scaling where the sum of a column is zero
-scaler = StandardScaler()
 X_train = train.copy().drop(columns=["Lead"])      # target
-X_train_scaled = StandardScaler().fit_transform(X_train.values)
-X_train_scaled_df = pd.DataFrame(X_train_scaled, index=X_train.index, columns=X_train.columns)
+X_train_scaled_df = rescaleDataFrame(X_train) 
 
 X_test = test.copy().drop(columns=["Lead"])
-X_test_scaled = StandardScaler().fit_transform(X_test.values)
-X_test_scaled_df = pd.DataFrame(X_test_scaled, index=X_test.index, columns=X_test.columns)
+X_test_scaled_df = rescaleDataFrame(X_test) 
 
 y_train = train["Lead"]
 y_test = test["Lead"]

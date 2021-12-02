@@ -51,7 +51,7 @@ def allCombos(lst):
 practiseTrain = pd.read_csv("train.csv")
 
 # split practiseTrain into train & test
-trainTestRatio = 0.6
+trainTestRatio = 0.75
 trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
 train = practiseTrain.iloc[trainIndex]
 test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
@@ -73,9 +73,12 @@ testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
 combos = allCombos(testParams)
 print(f"Generated {len(combos)} combinations.")
 print("Running ML-algo. for all combos.")
-model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)
+
 for c in combos:
     modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=c)
+
+specialTest = ["Gross"]
+modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=specialTest)
 
 #while True:
 #    exec(input("> "))

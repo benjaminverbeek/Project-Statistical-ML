@@ -71,7 +71,7 @@ practiseTrain = pd.read_csv("train.csv")
 practiceTest = pd.read_csv("test.csv")
 
 # split practiseTrain into train & test
-trainTestRatio = 0.95
+trainTestRatio = 0.6
 trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
 train = practiseTrain.iloc[trainIndex]
 test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
@@ -86,7 +86,10 @@ y_test = test["Lead"]
 #x_train_LDA = practiseTrain.copy().drop(columns=["Lead"])      # target
 #y_train_LDA = practiseTrain["Lead"]
 
-model = skl_da.LinearDiscriminantAnalysis()
+
+#model = skl_da.LinearDiscriminantAnalysis()
+model = skl_da.QuadraticDiscriminantAnalysis()
+
 testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
 combos = allCombos(testParams)
 for c in combos:

@@ -9,6 +9,7 @@ import sklearn.preprocessing as skl_pre
 import sklearn.linear_model as skl_lm
 import sklearn.discriminant_analysis as skl_da
 import sklearn.neighbors as skl_nb
+from sklearn.model_selection import KFold
 
 from sklearn import tree
 from sklearn.ensemble import BaggingClassifier, RandomForestClassifier
@@ -67,52 +68,66 @@ def allCombos(lst):
     return combos
 ######
 
+# Read the data 
 practiseTrain = pd.read_csv("train.csv")
 practiceTest = pd.read_csv("test.csv")
 
-# split practiseTrain into train & test
-trainTestRatio = 0.6
-trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
-train = practiseTrain.iloc[trainIndex]
-test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
 
-# split into X and y
+# Split data into two frames, X and y
+X = practiseTrain.copy().drop(columns=["Lead"])      # target
+y = practiseTrain["Lead"]
 
-x_train = train.copy().drop(columns=["Lead"])      # target
-y_train = train["Lead"]
-x_test = test.copy().drop(columns=["Lead"])
-y_test = test["Lead"]
+# Split index for the folds
+kf = KFold(n_splits = 10, shuffle = True, random_state = 1)
+testIndicies = []
 
-#x_train_LDA = practiseTrain.copy().drop(columns=["Lead"])      # target
-#y_train_LDA = practiseTrain["Lead"]
-
-
-#model = skl_da.LinearDiscriminantAnalysis()
-model = skl_da.QuadraticDiscriminantAnalysis()
-
-testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
-combos = allCombos(testParams)
-for c in combos:
-    modelDropParams(model, x_train, y_train, x_test, y_test, dropCols=c)
-
-'''
-#LDA
+# Choose model
 model = skl_da.LinearDiscriminantAnalysis()
+#model = skl_da.QuadraticDiscriminantAnalysis()
+
+for train_index, test_index in kf.split(X):
+    testIndicies.append(test_index)
+    X_train, X_test = X.iloc[train_index,: ], X.iloc[test_index,: ]
+    y_train, y_test = y[train_index], y[test_index]
+
+    print(f"model is {model}")
+    model.fit(X_train, y_train)
+
+    predict_prob = model.predict_proba(X_test)
+
+    prediction = np.empty(len(X_test), dtype=object)
+    prediction = np.where(predict_prob[:,0]>0.5, 'Female', 'Male')
+
+    acc = np.mean(prediction==y_test)
+    print(f"accuracy is {acc}\n")
+
+    print(pd.crosstab(prediction, y_test))
+
+
+'''result = next(kf.split(X), None)
+
+# Split both X and y into fold
+X_train = X.iloc[result[0]]
+X_test =  X.iloc[result[1]]
+y_train = y.iloc[result[0]]
+y_test =  y.iloc[result[1]]
+
+
 print(f"model is {model}")
-model.fit(x_train, y_train)
+model.fit(X_train, y_train)
 
-predict_prob = model.predict_proba(x_test)
+predict_prob = model.predict_proba(X_test)
 
-prediction = np.empty(len(x_test), dtype=object)
+prediction = np.empty(len(X_test), dtype=object)
 prediction = np.where(predict_prob[:,0]>0.5, 'Female', 'Male')
 
 acc = np.mean(prediction==y_test)
 print(f"accuracy is {acc}\n")
 
 print(pd.crosstab(prediction, y_test))
-'''
 
-'''
+
+
 #QDA
 model = skl_da.QuadraticDiscriminantAnalysis()
 print(f"model is {model}")
@@ -127,6 +142,26 @@ acc = np.mean(prediction==y_test)
 print(f"accuracy is {acc}\n")
 
 print(pd.crosstab(prediction, y_test))
+
+# split practiseTrain into train & test
+trainTestRatio = 0.6
+trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
+train = practiseTrain.iloc[trainIndex]
+test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
+
+# split into X and y
+x_train = train.copy().drop(columns=["Lead"])      # target
+y_train = train["Lead"]
+x_test = test.copy().drop(columns=["Lead"])
+y_test = test["Lead"]
+
+#model = skl_da.LinearDiscriminantAnalysis()
+model = skl_da.QuadraticDiscriminantAnalysis()
+
+testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
+combos = allCombos(testParams)
+for c in combos:
+    modelDropParams(model, x_train, y_train, x_test, y_test, dropCols=c)
 '''
 
 

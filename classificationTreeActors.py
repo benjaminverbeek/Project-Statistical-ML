@@ -14,8 +14,19 @@ import matplotlib.pyplot as plt
 
 from sklearn import tree
 from sklearn.ensemble import BaggingClassifier, RandomForestClassifier
+from imblearn.over_sampling import SMOTE
 
 import graphviz
+
+# Normalize input data to be between 0 and 1: imbalance in order of
+# magnitudes messes up weight of different factors. Therefore,
+# removing some inputs improves output.
+# need to use same factor for normalization during train and test 
+# (and later tests), even though norm wont be perfect.
+# Try it!
+
+# Average of one type, divide by that.
+# 
 
 def modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=[]):
     """Function running model dropping some X-params."""
@@ -48,34 +59,51 @@ def allCombos(lst):
     return combos
 ######
 
-if __name__=="__main__":
-    practiseTrain = pd.read_csv("train.csv")
+#if __name__=="__main__":
+practiseTrain = pd.read_csv("train.csv")
+practiseTrainNorm = practiseTrain.copy()
 
-<<<<<<< HEAD
+# Normalized... does not seem to affect.
+for c in practiseTrainNorm.copy().drop(columns=["Lead"]).columns:
+    m = practiseTrainNorm[c].mean()
+    practiseTrainNorm[c] = practiseTrainNorm[c].div(m)
+    m = practiseTrainNorm[c].mean()
+    practiseTrainNorm[c] = practiseTrainNorm[c].subtract(m)
+
 # split practiseTrain into train & test
-trainTestRatio = 0.75
+trainTestRatio = 0.6
 trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
 train = practiseTrain.iloc[trainIndex]
 test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
-=======
-    # split practiseTrain into train & test
-    trainTestRatio = 0.6
-    trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
-    train = practiseTrain.iloc[trainIndex]
-    test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
->>>>>>> 68af3a2da6e4b21f39875e354cba7182600a5cfd
+# Normed
+trainNorm = practiseTrainNorm.iloc[trainIndex]
+testNorm = practiseTrainNorm.iloc[~practiseTrainNorm.index.isin(trainIndex)]
 
-    # split into X and y
-    X_train = train.copy().drop(columns=["Lead"])      # target
-    y_train = train["Lead"]
-    X_test = test.copy().drop(columns=["Lead"])
-    y_test = test["Lead"]
+# split into X and y
+X_train = train.copy().drop(columns=["Lead"])      # target
+y_train = train["Lead"]
+X_test = test.copy().drop(columns=["Lead"])
+y_test = test["Lead"]
 
-    # for final output predicition (has no y)
-    finalTest = pd.read_csv("test.csv")
-    X_finalTest = finalTest.copy()
+### Resample training data to balance M/F
+# Vastly improves performance on female classification (slightly dropping male)
+sm = SMOTE(random_state=42)
+X_resTrain, y_resTrain = sm.fit_resample(X_train, y_train)
 
-<<<<<<< HEAD
+X_train = X_resTrain
+y_train = y_resTrain
+####
+
+X_trainNorm = trainNorm.copy().drop(columns=["Lead"])      # target
+y_trainNorm = trainNorm["Lead"]
+X_testNorm = testNorm.copy().drop(columns=["Lead"])
+y_testNorm = testNorm["Lead"]
+
+# for final output predicition (has no y)
+finalTest = pd.read_csv("test.csv")
+# NEED TO NORMALIZE
+X_finalTest = finalTest.copy()
+
 #model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
 model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)           # Random forest: naive gives 80-85%
 # TODO: How to improve?
@@ -85,25 +113,13 @@ print(f"Generated {len(combos)} combinations.")
 print("Running ML-algo. for all combos.")
 
 for c in combos:
+    model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)
+    model2 = RandomForestClassifier(max_depth=10, min_samples_leaf=1)
     modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=c)
+    modelDropParams(model2, X_trainNorm, y_trainNorm, X_testNorm, y_testNorm, dropCols=c)
 
-specialTest = ["Gross"]
-modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=specialTest)
+#specialTest = ["Gross"]
+#modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=specialTest)
 
 #while True:
 #    exec(input("> "))
-=======
-    #model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
-    model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)           # Random forest: naive gives 80-85%
-    # TODO: How to improve?
-    testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
-    combos = allCombos(testParams)
-    print(f"Generated {len(combos)} combinations.")
-    print("Running ML-algo. for all combos.")
-    model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)
-    for c in combos:
-        modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=c)
-
-    #while True:
-    #    exec(input("> "))
->>>>>>> 68af3a2da6e4b21f39875e354cba7182600a5cfd

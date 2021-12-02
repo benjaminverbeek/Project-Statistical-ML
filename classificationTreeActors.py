@@ -48,24 +48,34 @@ def allCombos(lst):
     return combos
 ######
 
-practiseTrain = pd.read_csv("train.csv")
+if __name__=="__main__":
+    practiseTrain = pd.read_csv("train.csv")
 
+<<<<<<< HEAD
 # split practiseTrain into train & test
 trainTestRatio = 0.75
 trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
 train = practiseTrain.iloc[trainIndex]
 test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
+=======
+    # split practiseTrain into train & test
+    trainTestRatio = 0.6
+    trainIndex = np.random.choice(practiseTrain.shape[0], size=int(len(practiseTrain)*trainTestRatio), replace=False)
+    train = practiseTrain.iloc[trainIndex]
+    test = practiseTrain.iloc[~practiseTrain.index.isin(trainIndex)]
+>>>>>>> 68af3a2da6e4b21f39875e354cba7182600a5cfd
 
-# split into X and y
-X_train = train.copy().drop(columns=["Lead"])      # target
-y_train = train["Lead"]
-X_test = test.copy().drop(columns=["Lead"])
-y_test = test["Lead"]
+    # split into X and y
+    X_train = train.copy().drop(columns=["Lead"])      # target
+    y_train = train["Lead"]
+    X_test = test.copy().drop(columns=["Lead"])
+    y_test = test["Lead"]
 
-# for final output predicition (has no y)
-finalTest = pd.read_csv("test.csv")
-X_finalTest = finalTest.copy()
+    # for final output predicition (has no y)
+    finalTest = pd.read_csv("test.csv")
+    X_finalTest = finalTest.copy()
 
+<<<<<<< HEAD
 #model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
 model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)           # Random forest: naive gives 80-85%
 # TODO: How to improve?
@@ -82,3 +92,18 @@ modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=specialTest)
 
 #while True:
 #    exec(input("> "))
+=======
+    #model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
+    model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)           # Random forest: naive gives 80-85%
+    # TODO: How to improve?
+    testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
+    combos = allCombos(testParams)
+    print(f"Generated {len(combos)} combinations.")
+    print("Running ML-algo. for all combos.")
+    model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)
+    for c in combos:
+        modelDropParams(model, X_train, y_train, X_test, y_test, dropCols=c)
+
+    #while True:
+    #    exec(input("> "))
+>>>>>>> 68af3a2da6e4b21f39875e354cba7182600a5cfd

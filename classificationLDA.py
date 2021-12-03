@@ -68,10 +68,9 @@ def allCombos(lst):
     return combos
 ######
 
-# Read the data 
+# Read the files into data frames 
 practiseTrain = pd.read_csv("train.csv")
 practiceTest = pd.read_csv("test.csv")
-
 
 # Split data into two frames, X and y
 X = practiseTrain.copy().drop(columns=["Lead"])      # target
@@ -84,6 +83,9 @@ testIndicies = []
 # Choose model
 model = skl_da.LinearDiscriminantAnalysis()
 #model = skl_da.QuadraticDiscriminantAnalysis()
+
+all_predictions = []
+all_ys = []
 
 for train_index, test_index in kf.split(X):
     testIndicies.append(test_index)
@@ -98,10 +100,19 @@ for train_index, test_index in kf.split(X):
     prediction = np.empty(len(X_test), dtype=object)
     prediction = np.where(predict_prob[:,0]>0.5, 'Female', 'Male')
 
+    all_predictions = all_predictions + prediction
+    all_ys = all_ys + y_test
+
     acc = np.mean(prediction==y_test)
     print(f"accuracy is {acc}\n")
 
     print(pd.crosstab(prediction, y_test))
+    #kanske adda pandas för att få ut totalen?
+
+acc = np.mean(all_predictions==all_ys)
+print(f"accuracy is {acc}\n")
+
+print(pd.crosstab(all_predictions, all_ys))
 
 
 '''result = next(kf.split(X), None)

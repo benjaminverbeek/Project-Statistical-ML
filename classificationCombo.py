@@ -23,6 +23,7 @@ def crossVal(model, X, y):
             'Male':[0, 0]}
     tot_crosstab = pd.DataFrame(data, index=['Female', 'Male'])
 
+    # Iterate over all k-folds, fit model and sum to cumulative confusion matrix
     for train_index, test_index in kf.split(X):
         testIndicies.append(test_index)
         X_train, X_test = X.iloc[train_index,: ], X.iloc[test_index,: ]
@@ -39,9 +40,8 @@ def crossVal(model, X, y):
 
         tot_crosstab = tot_crosstab + conf_mat
 
-    #print(f"accuracy is {acc}\n")
-
     print(tot_crosstab)
+    #TODO: calculate accuracy from the confusion matrix. True guesses/Total data
 
 def modelDropParams(model, X, y, dropCols=[]):
     """Function running model dropping some X-params."""
@@ -70,8 +70,6 @@ def allCombos(lst):
     return combos
 
 
-
-
 # Read the files into data frames 
 practiseTrain = pd.read_csv("train.csv")
 practiceTest = pd.read_csv("test.csv")
@@ -86,9 +84,12 @@ model = skl_da.LinearDiscriminantAnalysis()
 #model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
 #model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)  
 
+# Declare parameters to evaluate and extract all combos
 testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
 combos = allCombos(testParams)
 print(f"Generated {len(combos)} combinations.")
 print("Running ML-algo. for all combos.")
+
+# Iterate over all combos 
 for c in combos:
     modelDropParams(model, X, y, dropCols=c)

@@ -8,6 +8,7 @@ import sklearn.linear_model as skl_lm
 import sklearn.discriminant_analysis as skl_da
 import sklearn.neighbors as skl_nb
 from sklearn.model_selection import KFold
+from sklearn.preprocessing import StandardScaler
 
 def crossVal(model, X, y):
     print(f"model is {model}")
@@ -41,7 +42,10 @@ def crossVal(model, X, y):
         tot_crosstab = tot_crosstab + conf_mat
 
     print(tot_crosstab)
-    #TODO: calculate accuracy from the confusion matrix. True guesses/Total data
+    # TODO: calculate accuracy from the confusion matrix. True guesses/Total data
+    # df[0][0] + df[1][1] / totalen
+    # stör ni er på att acc inte skrivs ut kan ni fixa det själva <3
+    # annars fixar jag på söndag
 
 def modelDropParams(model, X, y, dropCols=[]):
     """Function running model dropping some X-params."""
@@ -69,6 +73,12 @@ def allCombos(lst):
         combos.append(params)
     return combos
 
+def rescaleDataFrame(df):
+    scaler = StandardScaler()
+    scaled_input = scaler.fit_transform(df.values)
+    scaled_df = pd.DataFrame(scaled_input, index=df.index, columns=df.columns)
+    return scaled_df
+######
 
 # Read the files into data frames 
 practiseTrain = pd.read_csv("train.csv")
@@ -78,11 +88,15 @@ practiceTest = pd.read_csv("test.csv")
 X = practiseTrain.copy().drop(columns=["Lead"])      # target
 y = practiseTrain["Lead"]
 
+# Rescale dataframe, can be commented to test if it gives better results or not
+X = rescaleDataFrame(X) 
+
 # Choose model
-model = skl_da.LinearDiscriminantAnalysis()
+#model = skl_da.LinearDiscriminantAnalysis()
 #model = skl_da.QuadraticDiscriminantAnalysis()
 #model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
 #model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)  
+model = skl_lm.LogisticRegression(solver='lbfgs', C=12, random_state=0) 
 
 # Declare parameters to evaluate and extract all combos
 testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]

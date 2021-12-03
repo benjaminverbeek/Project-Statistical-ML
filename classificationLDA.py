@@ -78,15 +78,17 @@ y = practiseTrain["Lead"]
 
 # Split index for the folds
 kf = KFold(n_splits = 10, shuffle = True, random_state = 1)
-testIndicies = []
+testIndicies = [] 
 
 # Choose model
 model = skl_da.LinearDiscriminantAnalysis()
 #model = skl_da.QuadraticDiscriminantAnalysis()
 
+print(f"model is {model}")
+
 all_predictions = []
 all_ys = []
-all_predictions_pd = pd.crosstab(all_predictions, all_ys)
+#all_predictions_pd = pd.crosstab(all_predictions, all_ys)
 
 # initialize data of lists.
 data = {'Female':[0, 0],
@@ -95,15 +97,11 @@ data = {'Female':[0, 0],
 # Create DataFrame
 test_pd = pd.DataFrame(data, index=['Female', 'Male'])
 
-print(test_pd)
-print(all_predictions_pd)
-
 for train_index, test_index in kf.split(X):
     testIndicies.append(test_index)
     X_train, X_test = X.iloc[train_index,: ], X.iloc[test_index,: ]
     y_train, y_test = y[train_index], y[test_index]
 
-    print(f"model is {model}")
     model.fit(X_train, y_train)
 
     predict_prob = model.predict_proba(X_test)
@@ -111,18 +109,11 @@ for train_index, test_index in kf.split(X):
     prediction = np.empty(len(X_test), dtype=object)
     prediction = np.where(predict_prob[:,0]>0.5, 'Female', 'Male')
 
-    acc = np.mean(prediction==y_test)
-    print(f"accuracy is {acc}\n")
-
     conf_mat = pd.crosstab(prediction, y_test)
 
-    print(conf_mat)
-
     test_pd = test_pd + conf_mat
-    #kanske adda pandas för att få ut totalen?
 
-acc = np.mean(all_predictions==all_ys)
-print(f"accuracy is {acc}\n")
+#print(f"accuracy is {acc}\n")
 
 print(test_pd)
 

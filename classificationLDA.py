@@ -86,6 +86,17 @@ model = skl_da.LinearDiscriminantAnalysis()
 
 all_predictions = []
 all_ys = []
+all_predictions_pd = pd.crosstab(all_predictions, all_ys)
+
+# initialize data of lists.
+data = {'Female':[0, 0],
+        'Male':[0, 0]}
+  
+# Create DataFrame
+test_pd = pd.DataFrame(data, index=['Female', 'Male'])
+
+print(test_pd)
+print(all_predictions_pd)
 
 for train_index, test_index in kf.split(X):
     testIndicies.append(test_index)
@@ -100,20 +111,20 @@ for train_index, test_index in kf.split(X):
     prediction = np.empty(len(X_test), dtype=object)
     prediction = np.where(predict_prob[:,0]>0.5, 'Female', 'Male')
 
-    all_predictions = all_predictions + prediction
-    all_ys = all_ys + y_test
-
     acc = np.mean(prediction==y_test)
     print(f"accuracy is {acc}\n")
 
-    print(pd.crosstab(prediction, y_test))
+    conf_mat = pd.crosstab(prediction, y_test)
+
+    print(conf_mat)
+
+    test_pd = test_pd + conf_mat
     #kanske adda pandas för att få ut totalen?
 
 acc = np.mean(all_predictions==all_ys)
 print(f"accuracy is {acc}\n")
 
-print(pd.crosstab(all_predictions, all_ys))
-
+print(test_pd)
 
 '''result = next(kf.split(X), None)
 

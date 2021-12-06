@@ -1,0 +1,15 @@
+Logistic regression is a method in the family of parametric models. By using the logistic function
+\begin{equation}
+  h(z) = \frac{e^{z}}{1+e^{z}}
+  \label{eq:lrfunc}
+\end{equation}
+it is possible to define $z$ as a linear regression model
+\begin{equation}
+  z=\theta_0+\theta_1x_1+\theta_2x_2+\ldots+\theta_p x_p = \theta^{T}\textbf{x}
+  \label{eq:lrcoeff}
+\end{equation}
+which squeezes the logistic function on the interval $[0,1]$ (referred to as the \textit{logit}). Since the model is predicting the outcome of the feature \textit{male} or \textit{female}, this implementation is a binary classification model. Instead of fitting to data, the sigmoid curve separates the data in the $xy$-plane with regards to a decision boundary. Train bla bla bla by numerically solving
+ \begin{equation}
+   \hat{\theta}=\arg\min_\theta \frac{1}{n} \sum_{i=1}^{n}\ln\bigg(1+e^{-y_i\theta^T \textbf{x}_i}\bigg)
+\end{equation}
+The parameter vector $\hat{\theta}$ is then applied in Function \ref{eq:lrfunc} binary return yeeeeeee fredag mina vänner.

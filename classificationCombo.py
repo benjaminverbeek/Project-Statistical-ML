@@ -9,8 +9,12 @@ import sklearn.discriminant_analysis as skl_da
 import sklearn.neighbors as skl_nb
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
+from sklearn import tree
+from sklearn.ensemble import BaggingClassifier, RandomForestClassifier
+# For balancing trainingdata. "Synthetic Minority Over-sampling TEchnique"
+from imblearn.over_sampling import SMOTE
 
-def crossVal(model, X, y):
+def crossVal(model, X, y, print_accuracy=True):
     print(f"model is {model}")
 
     # Split index for the folds
@@ -42,13 +46,17 @@ def crossVal(model, X, y):
         tot_crosstab = tot_crosstab + conf_mat
 
     print(tot_crosstab)
-    # TODO: calculate accuracy from the confusion matrix. True guesses/Total data
-    # df[0][0] + df[1][1] / totalen
-    # stör ni er på att acc inte skrivs ut kan ni fixa det själva <3
-    # annars fixar jag på söndag
+    if print_accuracy:
+        acc = (tot_crosstab['Female'][0] + tot_crosstab['Male'][1]) / tot_crosstab.values.sum()
+        print(f'Accuracy: {acc:.5f}')
+        nFem = tot_crosstab['Female'].values.sum()
+        nMale = tot_crosstab['Male'].values.sum()
+        accFem = tot_crosstab['Female'][0] / nFem
+        accMale = tot_crosstab['Male'][1] / nMale
+        print(f'Accuracy Female / Male:\t {accFem:.5f} / {accMale:.5f} \t (testdata contains {nMale / (nMale + nFem):.5f} % males)')
 
 def modelDropParams(model, X, y, dropCols=[]):
-    """Function running model dropping some X-params."""
+    """Function running model dropping some X-params. With cross-validation."""
     
     print(f"\nResults without {dropCols}")
     X = X.copy().drop(columns=dropCols)
@@ -92,11 +100,21 @@ y = practiseTrain["Lead"]
 X = rescaleDataFrame(X) 
 
 # Choose model
+def chooseModel(name):
+    return {
+        'LDA': skl_da.LinearDiscriminantAnalysis(),
+        'QDA': skl_da.QuadraticDiscriminantAnalysis(),
+        'tree': tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1),
+        'random-forest': RandomForestClassifier(max_depth=10, min_samples_leaf=1),
+        'logreg': skl_lm.LogisticRegression(solver='lbfgs', C=12, random_state=0)
+    }[name]
+
+model = chooseModel('random-forest')
 #model = skl_da.LinearDiscriminantAnalysis()
 #model = skl_da.QuadraticDiscriminantAnalysis()
 #model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
 #model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)  
-model = skl_lm.LogisticRegression(solver='lbfgs', C=12, random_state=0) 
+#model = skl_lm.LogisticRegression(solver='lbfgs', C=12, random_state=0) 
 
 # Declare parameters to evaluate and extract all combos
 testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]

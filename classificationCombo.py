@@ -14,7 +14,7 @@ from sklearn.ensemble import BaggingClassifier, RandomForestClassifier
 # For balancing trainingdata. "Synthetic Minority Over-sampling TEchnique"
 from imblearn.over_sampling import SMOTE
 
-def crossVal(model, X, y, print_accuracy=True):
+def crossVal(model, X, y, print_accuracy=True, run_all_models=False, dropCols=[]):
     print(f"model is {model}")
 
     # Split index for the folds
@@ -46,22 +46,29 @@ def crossVal(model, X, y, print_accuracy=True):
         tot_crosstab = tot_crosstab + conf_mat
 
     print(tot_crosstab)
-    if print_accuracy:
-        acc = (tot_crosstab['Female'][0] + tot_crosstab['Male'][1]) / tot_crosstab.values.sum()
-        print(f'Accuracy: {acc:.5f}')
-        nFem = tot_crosstab['Female'].values.sum()
-        nMale = tot_crosstab['Male'].values.sum()
-        accFem = tot_crosstab['Female'][0] / nFem
-        accMale = tot_crosstab['Male'][1] / nMale
-        print(f'Accuracy Female / Male:\t {accFem:.5f} / {accMale:.5f} \t (testdata contains {nMale / (nMale + nFem):.5f} % males)')
+    # Statistics:
+    acc = (tot_crosstab['Female'][0] + tot_crosstab['Male'][1]) / tot_crosstab.values.sum()
+    nFem = tot_crosstab['Female'].values.sum()
+    nMale = tot_crosstab['Male'].values.sum()
+    accFem = tot_crosstab['Female'][0] / nFem
+    accMale = tot_crosstab['Male'][1] / nMale
+    percentMale = nMale / (nMale + nFem)
 
-def modelDropParams(model, X, y, dropCols=[]):
+    if print_accuracy:    
+        print(f'Accuracy: {acc:.5f}')
+        print(f'Accuracy Female / Male:\t {accFem:.5f} / {accMale:.5f} \t (testdata contains {percentMale:.5f} % males)')
+    
+    if run_all_models:
+        results.append((acc, accFem, accMale, model, dropCols))
+
+
+def modelDropParams(model, X, y, dropCols=[], run_all_models=False):
     """Function running model dropping some X-params. With cross-validation."""
     
     print(f"\nResults without {dropCols}")
     X = X.copy().drop(columns=dropCols)
 
-    crossVal(model, X, y)
+    crossVal(model, X, y, run_all_models=run_all_models, dropCols=dropCols)
 
     #print(f'Accuracy tree: \t\t {np.mean(y_predict == y_test):.2f}')
     #allMale = y_test.copy().replace(["Female"],"Male") # make a copy with all Male.
@@ -104,11 +111,12 @@ models = {
         'LDA': skl_da.LinearDiscriminantAnalysis(),
         'QDA': skl_da.QuadraticDiscriminantAnalysis(),
         'tree': tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1),
-        'random-forest': RandomForestClassifier(max_depth=10, min_samples_leaf=1),
+        'random-forest': RandomForestClassifier(max_depth=5, min_samples_leaf=1),
         'logreg': skl_lm.LogisticRegression(solver='lbfgs', C=12, random_state=0)
     }
 
 model = models['random-forest']
+run_all_models = True
 
 # Declare parameters to evaluate and extract all combos
 testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
@@ -116,8 +124,23 @@ combos = allCombos(testParams)
 print(f"Generated {len(combos)} combinations.")
 print("Running ML-algo. for all combos.")
 
-# TODO: add a for-loop "for model in models.values():" which runs ALL models with same X, Y.
 # TODO: possibly add output to excel for easier report-writing? Or all just take their model and write.
+# OR save results to a dict and find max accuracy.
 # Iterate over all combos 
-for c in combos:
-    modelDropParams(model, X, y, dropCols=c)
+
+
+if run_all_models:
+    results = []
+    for model in models.values():
+        print(f'----- RUNNING MODEL: {model} -----')
+        for c in combos:
+            modelDropParams(model, X, y, dropCols=c, run_all_models=True)
+    print('\n#### FINAL RESULTS ####')
+    print(f'Top 5 by total accuracy: \n')
+    print(*list(reversed(sorted(results)[-5:])), sep='\n')  # prints line-by-line
+    print('###########')
+    print(f'Worst 5 by total accuracy: \n')
+    print(*sorted(results)[:5], sep='\n')
+else:
+    for c in combos:
+        modelDropParams(model, X, y, dropCols=c)

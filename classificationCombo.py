@@ -99,22 +99,16 @@ y = practiseTrain["Lead"]
 # Rescale dataframe, can be commented to test if it gives better results or not
 X = rescaleDataFrame(X) 
 
-# Choose model
-def chooseModel(name):
-    return {
+# Dict with models
+models = {
         'LDA': skl_da.LinearDiscriminantAnalysis(),
         'QDA': skl_da.QuadraticDiscriminantAnalysis(),
         'tree': tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1),
         'random-forest': RandomForestClassifier(max_depth=10, min_samples_leaf=1),
         'logreg': skl_lm.LogisticRegression(solver='lbfgs', C=12, random_state=0)
-    }[name]
+    }
 
-model = chooseModel('random-forest')
-#model = skl_da.LinearDiscriminantAnalysis()
-#model = skl_da.QuadraticDiscriminantAnalysis()
-#model = tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1)       # no better than random
-#model = RandomForestClassifier(max_depth=10, min_samples_leaf=1)  
-#model = skl_lm.LogisticRegression(solver='lbfgs', C=12, random_state=0) 
+model = models['random-forest']
 
 # Declare parameters to evaluate and extract all combos
 testParams = [["Year"], ["Gross"], ["Number words female", "Number words male"]]
@@ -122,6 +116,8 @@ combos = allCombos(testParams)
 print(f"Generated {len(combos)} combinations.")
 print("Running ML-algo. for all combos.")
 
+# TODO: add a for-loop "for model in models.values():" which runs ALL models with same X, Y.
+# TODO: possibly add output to excel for easier report-writing? Or all just take their model and write.
 # Iterate over all combos 
 for c in combos:
     modelDropParams(model, X, y, dropCols=c)

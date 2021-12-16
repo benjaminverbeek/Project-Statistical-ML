@@ -108,7 +108,7 @@ X = rescaleDataFrame(X)
 # Dict with models
 models = {
         'LDA': skl_da.LinearDiscriminantAnalysis(),
-        'QDA': skl_da.QuadraticDiscriminantAnalysis(reg_param = 0.01),
+        'QDA': skl_da.QuadraticDiscriminantAnalysis(reg_param = 0.00001),
         'tree': tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1),
         'random-forest': RandomForestClassifier(max_depth=5, min_samples_leaf=1),
         #'knearest': skl_nb.KNeighborsClassifier(n_neighbors=10),

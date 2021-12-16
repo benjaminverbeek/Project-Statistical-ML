@@ -19,7 +19,7 @@ def crossVal(model, X, y, print_accuracy=True, run_all_models=False, dropCols=[]
     print(f"model is {model}")
 
     # Split index for the folds
-    kf = KFold(n_splits = 10, shuffle = True, random_state = 1)
+    kf = KFold(n_splits = 10, shuffle = True, random_state = 100)
     testIndicies = [] 
 
     # Initiate cumulative sum variables
@@ -107,15 +107,15 @@ X = rescaleDataFrame(X)
 
 # Dict with models
 models = {
-        'LDA': skl_da.LinearDiscriminantAnalysis(),
-        'QDA': skl_da.QuadraticDiscriminantAnalysis(reg_param = 0.01),
-        'tree': tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1),
-        'random-forest': RandomForestClassifier(max_depth=5, min_samples_leaf=1),
+        #'LDA': skl_da.LinearDiscriminantAnalysis(),
+        'QDA': skl_da.QuadraticDiscriminantAnalysis(reg_param = 0.00001),
+        #'tree': tree.DecisionTreeClassifier(max_depth=4, min_samples_leaf=1),
+        #'random-forest': RandomForestClassifier(max_depth=5, min_samples_leaf=1),
         #'knearest': skl_nb.KNeighborsClassifier(n_neighbors=10),
-        'logreg': skl_lm.LogisticRegression(solver='lbfgs', C=12, random_state=0)
+        #'logreg': skl_lm.LogisticRegression(solver='lbfgs', C=12, random_state=0)
     }
 
-model = models['random-forest']
+#model = models['random-forest']
 run_all_models = True
 
 # Declare parameters to evaluate and extract all combos

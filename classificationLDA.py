@@ -81,8 +81,8 @@ kf = KFold(n_splits = 10, shuffle = True, random_state = 1)
 testIndicies = [] 
 
 # Choose model
-model = skl_da.LinearDiscriminantAnalysis()
-#model = skl_da.QuadraticDiscriminantAnalysis()
+#model = skl_da.LinearDiscriminantAnalysis()
+model = skl_da.QuadraticDiscriminantAnalysis()
 
 print(f"model is {model}")
 
@@ -96,6 +96,9 @@ data = {'Female':[0, 0],
   
 # Create DataFrame
 test_pd = pd.DataFrame(data, index=['Female', 'Male'])
+data = {'Female':[0, 0],
+            'Male':[0, 0]}
+tot_crosstab = pd.DataFrame(data, index=['Female', 'Male'])
 
 for train_index, test_index in kf.split(X):
     testIndicies.append(test_index)
@@ -113,7 +116,19 @@ for train_index, test_index in kf.split(X):
 
     test_pd = test_pd + conf_mat
 
-#print(f"accuracy is {acc}\n")
+    print(conf_mat)
+
+    '''#print(f"accuracy is {acc}\n")
+    acc = (tot_crosstab['Female'][0] + tot_crosstab['Male'][1]) / tot_crosstab.values.sum()
+    nFem = tot_crosstab['Female'].values.sum()
+    nMale = tot_crosstab['Male'].values.sum()
+    accFem = tot_crosstab['Female'][0] / nFem
+    accMale = tot_crosstab['Male'][1] / nMale
+    percentMale = nMale / (nMale + nFem)
+
+      
+    print(f'Accuracy: {acc:.5f}')
+    print(f'Accuracy Female / Male:\t {accFem:.5f} / {accMale:.5f} \t (testdata contains {percentMale:.5f} % males)')'''
 
 print(test_pd)
 
